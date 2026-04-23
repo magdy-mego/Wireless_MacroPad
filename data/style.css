@@ -1,0 +1,354 @@
+:root {
+  --bg: #0f1724;
+  --surface: #182439;
+  --surface-alt: #22344f;
+  --text: #ecf2ff;
+  --muted: #a3b0c6;
+  --accent: #ffb454;
+  --accent-2: #4fd1c5;
+  --danger: #ff6b6b;
+  --ring: rgba(255, 180, 84, 0.55);
+  --radius: 14px;
+  --shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at 15% 20%, #203050 0%, transparent 50%),
+    radial-gradient(circle at 85% 10%, #2a3558 0%, transparent 50%), var(--bg);
+  color: var(--text);
+  font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.bg-orb {
+  position: fixed;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.18;
+}
+
+.bg-orb-a {
+  top: -100px;
+  left: -80px;
+  background: #ffb454;
+}
+
+.bg-orb-b {
+  bottom: -120px;
+  right: -80px;
+  background: #4fd1c5;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.75rem;
+  animation: fadeInUp 320ms ease;
+}
+
+.kicker {
+  margin: 0;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.3rem, 2.5vw, 2rem);
+}
+
+h2 {
+  margin: 0 0 0.7rem;
+  font-size: 1.05rem;
+}
+
+.card {
+  background: linear-gradient(160deg, rgba(34, 52, 79, 0.85), rgba(24, 36, 57, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  animation: fadeInUp 380ms ease;
+}
+
+.status-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.battery-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.battery-body {
+  width: 40px;
+  height: 20px;
+  border: 2px solid var(--text);
+  border-radius: 4px;
+  padding: 2px;
+  position: relative;
+}
+
+.battery-level {
+  height: 100%;
+  background-color: var(--accent-2); /* اللون الافتراضي أخضر */
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.battery-cap {
+  width: 4px;
+  height: 8px;
+  background-color: var(--text);
+  border-radius: 0 2px 2px 0;
+}
+
+.battery-text {
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-width: 40px;
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.8rem;
+}
+
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.profile-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+
+.profile-tab {
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.profile-tab.active {
+  background: rgba(255, 180, 84, 0.22);
+  border-color: rgba(255, 180, 84, 0.7);
+}
+
+.profile-editor {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.grid-btn {
+  min-height: 84px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+  text-align: center;
+  gap: 0.2rem;
+}
+
+.grid-btn small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.grid-btn.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 180, 84, 0.2);
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: grid;
+  gap: 0.35rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(5, 10, 20, 0.45);
+  color: var(--text);
+  padding: 0.55rem 0.65rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.input-group {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.encoder-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.btn.primary {
+  border-color: rgba(255, 180, 84, 0.7);
+  background: linear-gradient(120deg, rgba(255, 180, 84, 0.32), rgba(255, 180, 84, 0.12));
+}
+
+.btn.danger {
+  border-color: rgba(255, 107, 107, 0.7);
+  background: rgba(255, 107, 107, 0.15);
+}
+
+.btn.big {
+  padding: 0.72rem 1rem;
+}
+
+.toast {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%) translateY(25px);
+  opacity: 0;
+  background: rgba(10, 16, 30, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  padding: 0.55rem 0.85rem;
+  color: var(--text);
+  transition: all 200ms ease;
+  z-index: 3;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 880px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .encoder-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-btn {
+    min-height: 72px;
+  }
+}

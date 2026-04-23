@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Macropad Config</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="bg-orb bg-orb-a"></div>
+    <div class="bg-orb bg-orb-b"></div>
+
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <p class="kicker">ESP32 MacroPad</p>
+          <h1>Wireless Config Console</h1>
+        </div>
+<div class="status-cluster">
+          <span id="bleStatus" class="pill">BLE: --</span>
+          
+          <div class="pill battery-container">
+            <div class="battery-body">
+              <div id="batteryLevel" class="battery-level" style="width: 100%;"></div>
+            </div>
+            <div class="battery-cap"></div>
+            <span id="batteryText" class="battery-text">--%</span>
+          </div>
+
+          <span id="apStatus" class="pill">AP: --</span>
+        </div>
+      </header>
+
+      <section class="profile-section card">
+        <div class="section-title-row">
+          <h2>Profiles</h2>
+          <button id="addProfileBtn" class="btn">+ Add</button>
+        </div>
+        <div id="profileTabs" class="profile-tabs"></div>
+        <div class="profile-editor">
+          <label for="profileNameInput">Selected Profile Name</label>
+          <input id="profileNameInput" type="text" maxlength="24" />
+          <div class="profile-actions">
+            <button id="renameProfileBtn" class="btn">Rename</button>
+            <button id="deleteProfileBtn" class="btn danger">Delete</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="card pad-grid-card">
+          <h2>3x3 Macro Grid</h2>
+          <div id="buttonGrid" class="button-grid"></div>
+        </div>
+
+        <div class="card editor-card">
+          <h2>Button Editor</h2>
+          <p id="selectedButtonLabel" class="muted">Select a button in the grid.</p>
+
+          <label for="actionType">Action Type</label>
+          <select id="actionType">
+            <option value="none">None</option>
+            <option value="combo">Key Combo</option>
+            <option value="text">Text Macro</option>
+            <option value="media">Media Key</option>
+            <option value="mouse">Mouse</option>
+            <option value="layer_switch">Layer Switch</option>
+          </select>
+
+          <div id="comboGroup" class="input-group hidden">
+            <label for="comboKeys">Combo Keys (comma separated)</label>
+            <input id="comboKeys" type="text" placeholder="KEY_LEFT_CTRL,KEY_S" />
+            <button id="recordComboBtn" class="btn">Record</button>
+            <p class="muted">Press your desired key combo after tapping Record.</p>
+          </div>
+
+          <div id="textGroup" class="input-group hidden">
+            <label for="textData">Text Macro</label>
+            <textarea id="textData" rows="4" maxlength="150" placeholder="git commit -m "></textarea>
+          </div>
+
+          <div id="mediaGroup" class="input-group hidden">
+            <label for="mediaData">Media Action</label>
+            <select id="mediaData">
+              <option value="KEY_MEDIA_VOLUME_UP">Volume Up</option>
+              <option value="KEY_MEDIA_VOLUME_DOWN">Volume Down</option>
+              <option value="KEY_MEDIA_MUTE">Mute</option>
+              <option value="KEY_MEDIA_PLAY_PAUSE">Play / Pause</option>
+              <option value="KEY_MEDIA_NEXT_TRACK">Next Track</option>
+              <option value="KEY_MEDIA_PREVIOUS_TRACK">Previous Track</option>
+            </select>
+          </div>
+
+          <div id="mouseGroup" class="input-group hidden">
+            <label for="mouseData">Mouse Action</label>
+            <select id="mouseData">
+              <option value="MOUSE_SCROLL_UP">Scroll Up</option>
+              <option value="MOUSE_SCROLL_DOWN">Scroll Down</option>
+            </select>
+          </div>
+
+          <div id="layerGroup" class="input-group hidden">
+            <label for="layerData">Target Profile ID</label>
+            <input id="layerData" type="number" min="0" step="1" />
+          </div>
+
+          <button id="applyButtonBtn" class="btn primary">Apply to Selected Button</button>
+        </div>
+      </section>
+
+      <section class="card encoder-card">
+        <h2>Encoder Mapping</h2>
+        <div class="encoder-grid">
+          <label>
+            Clockwise
+            <input id="encoderCw" type="text" placeholder="KEY_MEDIA_VOLUME_UP" />
+          </label>
+          <label>
+            Counter-Clockwise
+            <input id="encoderCcw" type="text" placeholder="KEY_MEDIA_VOLUME_DOWN" />
+          </label>
+          <label>
+            Press
+            <input id="encoderPress" type="text" placeholder="KEY_MEDIA_MUTE" />
+          </label>
+        </div>
+      </section>
+
+      <section class="actions card">
+        <button id="saveBtn" class="btn primary big">Save to Device</button>
+        <button id="reloadBtn" class="btn">Reload from Device</button>
+        <button id="rebootBtn" class="btn danger">Restart Macropad</button>
+      </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

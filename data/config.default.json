@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "profiles": [
+    {
+      "name": "Default",
+      "id": 0,
+      "buttons": [
+        {"id": 0, "type": "combo", "keys": ["KEY_LEFT_CTRL", "KEY_S"]},
+        {"id": 1, "type": "text", "data": "git commit -m "},
+        {"id": 2, "type": "media", "data": "KEY_MEDIA_VOLUME_UP"},
+        {"id": 3, "type": "none"},
+        {"id": 4, "type": "none"},
+        {"id": 5, "type": "none"},
+        {"id": 6, "type": "none"},
+        {"id": 7, "type": "none"},
+        {"id": 8, "type": "none"}
+      ],
+      "encoder": {
+        "cw": "KEY_MEDIA_VOLUME_UP",
+        "ccw": "KEY_MEDIA_VOLUME_DOWN",
+        "press": "KEY_MEDIA_MUTE"
+      }
+    }
+  ],
+  "active_profile": 0,
+  "battery": {
+    "divider_ratio": 2.0,
+    "low_battery_threshold_v": 3.3,
+    "full_voltage_v": 4.2,
+    "empty_voltage_v": 3.2,
+    "update_interval_ms": 30000,
+    "sample_count": 7,
+    "smoothing_window": 5,
+    "calibration_scale": 1.0,
+    "calibration_offset_v": 0.0,
+    "normal_idle_sleep_ms": 60000,
+    "low_battery_idle_sleep_ms": 15000
+  }
+}
