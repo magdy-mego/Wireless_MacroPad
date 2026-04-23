@@ -50,7 +50,7 @@ struct BatteryConfig {
   uint8_t smoothingWindow = 5;
   float calibrationScale = 1.0f;
   float calibrationOffsetV = 0.0f;
-  uint32_t normalIdleSleepMs = 60000;
+  uint32_t normalIdleSleepMs = 300000;
   uint32_t lowBatteryIdleSleepMs = 15000;
 };
 
