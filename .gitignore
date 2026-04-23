@@ -3,3 +3,9 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+.pio/
+.vscode/
+*.bin
+*.elf
+/data/config.default.json
+src/config_types.h
