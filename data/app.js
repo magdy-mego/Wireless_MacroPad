@@ -1,3 +1,5 @@
+// Central UI state. We keep a normalized in-memory config so every editor
+// interaction writes predictable payloads back to the firmware.
 const state = {
   config: null,
   selectedProfile: 0,
@@ -5,12 +7,21 @@ const state = {
   recording: false,
 };
 
+// Shared model constants.
+const kConfigVersion = 1;
+const kButtonsPerProfile = 6;
+const kMaxComboKeys = 6;
+const kSupportedActionTypes = new Set(["none", "combo", "text", "media", "mouse", "sequence"]);
+
+// Cache DOM references once at startup.
 const els = {
   profileTabs: document.getElementById("profileTabs"),
   profileNameInput: document.getElementById("profileNameInput"),
   buttonGrid: document.getElementById("buttonGrid"),
   selectedButtonLabel: document.getElementById("selectedButtonLabel"),
   actionType: document.getElementById("actionType"),
+  sequenceGroup: document.getElementById("sequenceGroup"),
+  sequenceData: document.getElementById("sequenceData"),
   comboGroup: document.getElementById("comboGroup"),
   comboKeys: document.getElementById("comboKeys"),
   recordComboBtn: document.getElementById("recordComboBtn"),
@@ -20,8 +31,6 @@ const els = {
   mediaData: document.getElementById("mediaData"),
   mouseGroup: document.getElementById("mouseGroup"),
   mouseData: document.getElementById("mouseData"),
-  layerGroup: document.getElementById("layerGroup"),
-  layerData: document.getElementById("layerData"),
   encoderCw: document.getElementById("encoderCw"),
   encoderCcw: document.getElementById("encoderCcw"),
   encoderPress: document.getElementById("encoderPress"),
@@ -34,23 +43,17 @@ const els = {
   applyButtonBtn: document.getElementById("applyButtonBtn"),
   toast: document.getElementById("toast"),
   bleStatus: document.getElementById("bleStatus"),
-  batteryStatus: document.getElementById("batteryStatus"),
   apStatus: document.getElementById("apStatus"),
+  batteryLevel: document.getElementById("batteryLevel"),
+  batteryText: document.getElementById("batteryText"),
 };
 
-function defaultConfig() {
-  return {
-    version: 1,
-    active_profile: 0,
-    profiles: [createNewProfile(0, "Default")],
-  };
-}
-
+// Factory for an empty profile that already matches firmware limits.
 function createNewProfile(id, name) {
   return {
     id,
     name,
-    buttons: Array.from({ length: 9 }, (_, i) => ({ id: i, type: "none" })),
+    buttons: Array.from({ length: kButtonsPerProfile }, (_, i) => ({ id: i, type: "none" })),
     encoder: {
       cw: "KEY_MEDIA_VOLUME_UP",
       ccw: "KEY_MEDIA_VOLUME_DOWN",
@@ -59,6 +62,16 @@ function createNewProfile(id, name) {
   };
 }
 
+// Local fallback used when fetch fails or payload is malformed.
+function defaultConfig() {
+  return {
+    version: kConfigVersion,
+    active_profile: 0,
+    profiles: [createNewProfile(0, "Default")],
+  };
+}
+
+// Lightweight toast helper for success/error feedback.
 function toast(msg, isError = false) {
   els.toast.textContent = msg;
   els.toast.style.borderColor = isError ? "rgba(255, 107, 107, 0.8)" : "rgba(79, 209, 197, 0.8)";
@@ -67,26 +80,35 @@ function toast(msg, isError = false) {
   toast._timer = setTimeout(() => els.toast.classList.remove("show"), 2200);
 }
 
+// Guard profile index against stale UI pointers.
 function profileSafe() {
   if (!state.config) return null;
-  if (state.selectedProfile >= state.config.profiles.length) state.selectedProfile = 0;
+  if (state.selectedProfile >= state.config.profiles.length) {
+    state.selectedProfile = 0;
+  }
   return state.config.profiles[state.selectedProfile] || null;
 }
 
+// Guard selected button index against profile-size changes.
 function selectedButtonSafe() {
   const profile = profileSafe();
   if (!profile) return null;
-  if (state.selectedButton >= profile.buttons.length) state.selectedButton = 0;
+  if (state.selectedButton >= profile.buttons.length) {
+    state.selectedButton = 0;
+  }
   return profile.buttons[state.selectedButton] || null;
 }
 
+// Render-friendly action preview text used in grid tiles.
 function actionSummary(action) {
   if (!action || !action.type || action.type === "none") return "None";
   if (action.type === "combo") return (action.keys || []).join(" + ") || "Combo";
+  if (action.type === "sequence") return action.data || "Sequence";
   if (action.type === "text") return action.data || "Text";
   return action.data || action.type;
 }
 
+// Render profile tabs and selected profile name editor.
 function renderProfiles() {
   const profile = profileSafe();
   els.profileTabs.innerHTML = "";
@@ -106,40 +128,43 @@ function renderProfiles() {
   els.profileNameInput.value = profile ? profile.name : "";
 }
 
+// Render the 2x3 key grid from current profile data.
 function renderGrid() {
   const profile = profileSafe();
   els.buttonGrid.innerHTML = "";
   if (!profile) return;
 
   profile.buttons.forEach((btn, idx) => {
-    const b = document.createElement("button");
-    b.className = "grid-btn" + (idx === state.selectedButton ? " selected" : "");
-    b.innerHTML = `<strong>K${idx + 1}</strong><small>${escapeHtml(actionSummary(btn))}</small>`;
-    b.onclick = () => {
+    const buttonEl = document.createElement("button");
+    buttonEl.className = "grid-btn" + (idx === state.selectedButton ? " selected" : "");
+    buttonEl.innerHTML = `<strong>K${idx + 1}</strong><small>${escapeHtml(actionSummary(btn))}</small>`;
+    buttonEl.onclick = () => {
       state.selectedButton = idx;
       renderAll();
     };
-    els.buttonGrid.appendChild(b);
+    els.buttonGrid.appendChild(buttonEl);
   });
 }
 
+// Render action editor fields for currently selected button.
 function renderButtonEditor() {
   const btn = selectedButtonSafe();
   const profile = profileSafe();
   if (!btn || !profile) return;
 
-  els.selectedButtonLabel.textContent = `Editing ${profile.name} • Button ${btn.id + 1}`;
+  els.selectedButtonLabel.textContent = `Editing ${profile.name} - Button ${btn.id + 1}`;
   els.actionType.value = btn.type || "none";
 
-  els.comboKeys.value = (btn.keys || []).join(",");
-  els.textData.value = btn.data || "";
-  els.mediaData.value = btn.data || "KEY_MEDIA_VOLUME_UP";
-  els.mouseData.value = btn.data || "MOUSE_SCROLL_UP";
-  els.layerData.value = Number.isInteger(Number(btn.data)) ? String(btn.data) : "0";
+  els.sequenceData.value = btn.type === "sequence" ? btn.data || "" : "";
+  els.comboKeys.value = btn.type === "combo" ? (btn.keys || []).join(",") : "";
+  els.textData.value = btn.type === "text" ? btn.data || "" : "";
+  els.mediaData.value = btn.type === "media" ? btn.data || "KEY_MEDIA_VOLUME_UP" : "KEY_MEDIA_VOLUME_UP";
+  els.mouseData.value = btn.type === "mouse" ? btn.data || "MOUSE_SCROLL_UP" : "MOUSE_SCROLL_UP";
 
   toggleEditorGroups(btn.type || "none");
 }
 
+// Render encoder mapping editor for selected profile.
 function renderEncoderEditor() {
   const profile = profileSafe();
   if (!profile) return;
@@ -149,48 +174,53 @@ function renderEncoderEditor() {
   els.encoderPress.value = profile.encoder?.press || "";
 }
 
+// Show only the editor group that belongs to selected action type.
 function toggleEditorGroups(type) {
+  els.sequenceGroup.classList.toggle("hidden", type !== "sequence");
   els.comboGroup.classList.toggle("hidden", type !== "combo");
   els.textGroup.classList.toggle("hidden", type !== "text");
   els.mediaGroup.classList.toggle("hidden", type !== "media");
   els.mouseGroup.classList.toggle("hidden", type !== "mouse");
-  els.layerGroup.classList.toggle("hidden", type !== "layer_switch");
 }
 
+// Full-page rerender entrypoint used after any state mutation.
 function renderAll() {
   renderProfiles();
   renderGrid();
   renderButtonEditor();
   renderEncoderEditor();
-  document.getElementById('sequenceData').value = b.data || '';
 }
 
+// Convert unknown/legacy payloads into strict v1 + 2x3 shape.
 function normalizeConfig(cfg) {
-  const safe = cfg && cfg.version === 1 ? cfg : defaultConfig();
+  const safe = cfg && cfg.version === kConfigVersion ? cfg : defaultConfig();
   if (!Array.isArray(safe.profiles) || safe.profiles.length === 0) {
     safe.profiles = [createNewProfile(0, "Default")];
   }
 
-  safe.active_profile = Math.max(0, Math.min(safe.active_profile || 0, safe.profiles.length - 1));
+  safe.active_profile = Math.max(0, Math.min(Number(safe.active_profile) || 0, safe.profiles.length - 1));
 
   safe.profiles = safe.profiles.map((p, idx) => {
     const profile = {
       id: Number.isInteger(p.id) ? p.id : idx,
       name: p.name || `Profile ${idx + 1}`,
-      buttons: Array.isArray(p.buttons) ? p.buttons.slice(0, 9) : [],
+      buttons: Array.isArray(p.buttons) ? p.buttons.slice(0, kButtonsPerProfile) : [],
       encoder: p.encoder || {},
     };
 
-    while (profile.buttons.length < 9) {
+    while (profile.buttons.length < kButtonsPerProfile) {
       profile.buttons.push({ id: profile.buttons.length, type: "none" });
     }
 
-    profile.buttons = profile.buttons.map((b, i) => ({
-      id: Number.isInteger(b.id) ? b.id : i,
-      type: b.type || "none",
-      keys: Array.isArray(b.keys) ? b.keys.slice(0, 6) : undefined,
-      data: typeof b.data === "string" ? b.data : undefined,
-    }));
+    profile.buttons = profile.buttons.map((b, i) => {
+      const type = kSupportedActionTypes.has(b.type) ? b.type : "none";
+      return {
+        id: Number.isInteger(b.id) ? b.id : i,
+        type,
+        keys: Array.isArray(b.keys) ? b.keys.slice(0, kMaxComboKeys) : undefined,
+        data: typeof b.data === "string" ? b.data : undefined,
+      };
+    });
 
     profile.encoder = {
       cw: profile.encoder.cw || "KEY_MEDIA_VOLUME_UP",
@@ -204,6 +234,7 @@ function normalizeConfig(cfg) {
   return safe;
 }
 
+// Apply action editor values into selected button object.
 function readEditorIntoButton() {
   const profile = profileSafe();
   const btn = selectedButtonSafe();
@@ -212,28 +243,26 @@ function readEditorIntoButton() {
   const type = els.actionType.value;
   const next = { id: btn.id, type };
 
-  if (type === "combo") {
-    const keys = els.comboKeys.value
+  if (type === "sequence") {
+    next.data = els.sequenceData.value;
+  } else if (type === "combo") {
+    next.keys = els.comboKeys.value
       .split(",")
       .map((k) => k.trim())
       .filter(Boolean)
-      .slice(0, 6);
-    next.keys = keys;
+      .slice(0, kMaxComboKeys);
   } else if (type === "text") {
     next.data = els.textData.value;
   } else if (type === "media") {
     next.data = els.mediaData.value;
   } else if (type === "mouse") {
     next.data = els.mouseData.value;
-  } else if (type === "layer_switch") {
-    next.data = String(Math.max(0, Number(els.layerData.value) || 0));
   }
-  else if(b.type === 'sequence') {
-    b.data = document.getElementById('sequenceData').value;
-}
+
   profile.buttons[state.selectedButton] = next;
 }
 
+// Apply encoder editor values into selected profile object.
 function readEncoderEditor() {
   const profile = profileSafe();
   if (!profile) return;
@@ -245,6 +274,7 @@ function readEncoderEditor() {
   };
 }
 
+// Escape injected text before inserting into `innerHTML`.
 function escapeHtml(v) {
   return String(v)
     .replaceAll("&", "&amp;")
@@ -254,6 +284,7 @@ function escapeHtml(v) {
     .replaceAll("'", "&#039;");
 }
 
+// Map keyboard event key value into firmware action token.
 function keyToToken(ev) {
   const key = ev.key;
   if (key.length === 1 && /[a-zA-Z0-9]/.test(key)) return `KEY_${key.toUpperCase()}`;
@@ -280,25 +311,21 @@ function keyToToken(ev) {
   return null;
 }
 
+// Capture combo chord from keyboard input and fill combo field.
 function startRecordCombo() {
   state.recording = true;
   els.recordComboBtn.textContent = "Recording...";
-
-  toast("Hold your keys together, then release"); 
-
+  toast("Hold your keys together, then release");
 
   const downHandler = (ev) => {
     if (!state.recording) return;
     ev.preventDefault();
 
     const keys = [];
-    
-
     if (ev.ctrlKey) keys.push("KEY_LEFT_CTRL");
     if (ev.shiftKey) keys.push("KEY_LEFT_SHIFT");
     if (ev.altKey) keys.push("KEY_LEFT_ALT");
-    if (ev.metaKey) keys.push("KEY_LEFT_GUI"); 
-
+    if (ev.metaKey) keys.push("KEY_LEFT_GUI");
 
     const isModifier = ["Control", "Shift", "Alt", "Meta"].includes(ev.key);
     if (!isModifier) {
@@ -309,24 +336,21 @@ function startRecordCombo() {
     els.comboKeys.value = keys.join(",");
   };
 
-
   const upHandler = (ev) => {
     if (!state.recording) return;
     ev.preventDefault();
-    
+
     state.recording = false;
     els.recordComboBtn.textContent = "Record";
-    
-
     window.removeEventListener("keydown", downHandler, true);
     window.removeEventListener("keyup", upHandler, true);
   };
-
 
   window.addEventListener("keydown", downHandler, true);
   window.addEventListener("keyup", upHandler, true);
 }
 
+// Build final payload object right before POST /api/config.
 function buildSavePayload() {
   readEditorIntoButton();
   readEncoderEditor();
@@ -340,6 +364,7 @@ function buildSavePayload() {
   return state.config;
 }
 
+// Pull config from device, normalize it, then render.
 async function loadConfig() {
   try {
     const res = await fetch("/api/config", { cache: "no-store" });
@@ -358,20 +383,17 @@ async function loadConfig() {
   }
 }
 
-
+// Trigger firmware restart via API endpoint.
 async function restartDevice() {
-
   if (!confirm("Are you sure you want to restart the Macropad?")) return;
-  
+
   toast("Restarting Macropad...");
   try {
     await fetch("/api/restart", { method: "POST" });
-    
-
     setTimeout(() => {
       els.apStatus.textContent = "AP: Rebooting...";
       els.bleStatus.textContent = "BLE: Disconnected";
-      toast("Device restarted. You can close this page.", false);
+      toast("Device restarted. You can close this page.");
     }, 1000);
   } catch (err) {
     console.error("Restart trigger failed", err);
@@ -379,6 +401,7 @@ async function restartDevice() {
   }
 }
 
+// Save active editor state to firmware.
 async function saveConfig() {
   const payload = buildSavePayload();
   try {
@@ -400,6 +423,7 @@ async function saveConfig() {
   }
 }
 
+// Poll runtime status for BLE/AP and battery indicators.
 async function pollStatus() {
   try {
     const res = await fetch("/api/status", { cache: "no-store" });
@@ -407,39 +431,40 @@ async function pollStatus() {
     const data = await res.json();
 
     els.bleStatus.textContent = `BLE: ${data.ble_connected ? "Connected" : "Waiting"}`;
-    const batteryVoltage = Number(data.battery_voltage ?? data.battery ?? 0);
     const batteryPercent = Number(data.battery_percent ?? 0);
     const charging = Boolean(data.charging);
-const batteryLevelEl = document.getElementById("batteryLevel");
-    const batteryTextEl = document.getElementById("batteryText");
 
-
-    if (batteryLevelEl && batteryTextEl) {
-      batteryLevelEl.style.width = `${batteryPercent}%`;
-
-      batteryTextEl.textContent = `${batteryPercent}% ${charging ? "⚡" : ""}`;
-
+    if (els.batteryLevel && els.batteryText) {
+      els.batteryLevel.style.width = `${batteryPercent}%`;
+      els.batteryText.textContent = `${batteryPercent}%${charging ? " CHG" : ""}`;
 
       if (batteryPercent > 70) {
-        batteryLevelEl.style.backgroundColor = "#4fd1c5"; 
+        els.batteryLevel.style.backgroundColor = "#4fd1c5";
       } else if (batteryPercent > 20) {
-        batteryLevelEl.style.backgroundColor = "#ffb454"; 
+        els.batteryLevel.style.backgroundColor = "#ffb454";
       } else {
-        batteryLevelEl.style.backgroundColor = "#ff6b6b"; 
+        els.batteryLevel.style.backgroundColor = "#ff6b6b";
       }
     }
+
     els.apStatus.textContent = `AP: ${data.ap_enabled ? "On" : "Off"}`;
   } catch (err) {
     console.error(err);
   }
 }
 
+// Attach all UI event handlers.
 function bindUi() {
-  els.actionType.addEventListener("change", () => toggleEditorGroups(els.actionType.value));
+  els.actionType.addEventListener("change", () => {
+    toggleEditorGroups(els.actionType.value);
+  });
+
   els.recordComboBtn.addEventListener("click", startRecordCombo);
+
   els.applyButtonBtn.addEventListener("click", () => {
     readEditorIntoButton();
     renderGrid();
+    renderButtonEditor();
     toast("Button mapping updated");
   });
 
@@ -454,11 +479,13 @@ function bindUi() {
   els.renameProfileBtn.addEventListener("click", () => {
     const profile = profileSafe();
     if (!profile) return;
+
     const value = els.profileNameInput.value.trim();
     if (!value) {
       toast("Profile name cannot be empty", true);
       return;
     }
+
     profile.name = value;
     renderProfiles();
     toast("Profile renamed");
@@ -469,22 +496,27 @@ function bindUi() {
       toast("At least one profile is required", true);
       return;
     }
+
     state.config.profiles.splice(state.selectedProfile, 1);
-    state.config.profiles.forEach((p, idx) => (p.id = idx));
+    state.config.profiles.forEach((p, idx) => {
+      p.id = idx;
+    });
+
     state.selectedProfile = Math.max(0, state.selectedProfile - 1);
     state.selectedButton = 0;
     renderAll();
     toast("Profile deleted");
   });
+
   els.saveBtn.addEventListener("click", saveConfig);
   els.rebootBtn.addEventListener("click", restartDevice);
   els.reloadBtn.addEventListener("click", loadConfig);
 }
 
+// Boot the UI after static assets are loaded.
 (async function init() {
   bindUi();
   await loadConfig();
   await pollStatus();
   setInterval(pollStatus, 2000);
-  document.getElementById('sequenceGroup').classList.toggle('hidden', els.actionType.value !== 'sequence');
 })();

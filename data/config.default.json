@@ -5,15 +5,12 @@
       "name": "Default",
       "id": 0,
       "buttons": [
-        {"id": 0, "type": "combo", "keys": ["KEY_LEFT_CTRL", "KEY_S"]},
-        {"id": 1, "type": "text", "data": "git commit -m "},
-        {"id": 2, "type": "media", "data": "KEY_MEDIA_VOLUME_UP"},
-        {"id": 3, "type": "none"},
-        {"id": 4, "type": "none"},
-        {"id": 5, "type": "none"},
-        {"id": 6, "type": "none"},
-        {"id": 7, "type": "none"},
-        {"id": 8, "type": "none"}
+        { "id": 0, "type": "combo", "keys": ["KEY_LEFT_CTRL", "KEY_S"] },
+        { "id": 1, "type": "text", "data": "git commit -m " },
+        { "id": 2, "type": "media", "data": "KEY_MEDIA_VOLUME_UP" },
+        { "id": 3, "type": "sequence", "data": "WIN+R; DELAY 200; TEXT notepad; ENTER" },
+        { "id": 4, "type": "mouse", "data": "MOUSE_SCROLL_UP" },
+        { "id": 5, "type": "none" }
       ],
       "encoder": {
         "cw": "KEY_MEDIA_VOLUME_UP",

@@ -1,3 +1,7 @@
+/*
+  Visual system tokens for the web configurator.
+  Colors intentionally keep high contrast in AP/captive-portal contexts.
+*/
 :root {
   --bg: #0f1724;
   --surface: #182439;
@@ -12,6 +16,7 @@
   --shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
 }
 
+/* Base reset. */
 * {
   box-sizing: border-box;
 }
@@ -26,6 +31,7 @@ body {
   font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
 }
 
+/* Background glow ornaments. */
 .bg-orb {
   position: fixed;
   width: 340px;
@@ -49,6 +55,7 @@ body {
   background: #4fd1c5;
 }
 
+/* Main app layout. */
 .app {
   position: relative;
   z-index: 1;
@@ -86,6 +93,7 @@ h2 {
   font-size: 1.05rem;
 }
 
+/* Shared card component. */
 .card {
   background: linear-gradient(160deg, rgba(34, 52, 79, 0.85), rgba(24, 36, 57, 0.95));
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -95,11 +103,22 @@ h2 {
   animation: fadeInUp 380ms ease;
 }
 
+/* Header status chips. */
 .status-cluster {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+.pill {
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.8rem;
+}
+
+/* Battery icon widget inside status row. */
 .battery-container {
   display: flex;
   align-items: center;
@@ -117,7 +136,7 @@ h2 {
 
 .battery-level {
   height: 100%;
-  background-color: var(--accent-2); /* اللون الافتراضي أخضر */
+  background-color: var(--accent-2);
   border-radius: 2px;
   transition: width 0.3s ease, background-color 0.3s ease;
 }
@@ -135,14 +154,7 @@ h2 {
   min-width: 40px;
 }
 
-.pill {
-  display: inline-block;
-  padding: 0.35rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
-  font-size: 0.8rem;
-}
-
+/* Profile controls. */
 .section-title-row {
   display: flex;
   justify-content: space-between;
@@ -182,12 +194,14 @@ h2 {
   gap: 0.5rem;
 }
 
+/* Main editor workspace columns. */
 .workspace {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
+/* Key grid uses 3 columns to represent 2x3 hardware. */
 .button-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -220,6 +234,7 @@ h2 {
   box-shadow: 0 0 0 2px rgba(255, 180, 84, 0.2);
 }
 
+/* Forms and typography helpers. */
 .muted {
   color: var(--muted);
   margin: 0 0 0.6rem;
@@ -269,12 +284,14 @@ textarea:focus {
   display: none;
 }
 
+/* Encoder section grid. */
 .encoder-grid {
   display: grid;
   gap: 0.65rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/* Action buttons row. */
 .actions {
   display: flex;
   gap: 0.6rem;
@@ -308,6 +325,7 @@ textarea:focus {
   padding: 0.72rem 1rem;
 }
 
+/* Toast component for non-blocking notifications. */
 .toast {
   position: fixed;
   bottom: 18px;
@@ -328,6 +346,7 @@ textarea:focus {
   transform: translateX(-50%) translateY(0);
 }
 
+/* Subtle entry animation used for cards and header. */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -339,6 +358,7 @@ textarea:focus {
   }
 }
 
+/* Mobile layout fallback. */
 @media (max-width: 880px) {
   .workspace {
     grid-template-columns: 1fr;

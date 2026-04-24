@@ -2,6 +2,7 @@
 
 namespace config {
 
+// Convert enum to stable JSON token.
 const char* actionTypeToString(ActionType type) {
   switch (type) {
     case ActionType::Combo:
@@ -17,12 +18,12 @@ const char* actionTypeToString(ActionType type) {
     case ActionType::Sequence:
       return "sequence";
     case ActionType::None:
-    
     default:
       return "none";
   }
 }
 
+// Convert JSON token to enum. Unknown values become None.
 ActionType actionTypeFromString(const String& value) {
   if (value == "combo") {
     return ActionType::Combo;
@@ -43,7 +44,6 @@ ActionType actionTypeFromString(const String& value) {
     return ActionType::Sequence;
   }
   return ActionType::None;
-
 }
 
 }  // namespace config

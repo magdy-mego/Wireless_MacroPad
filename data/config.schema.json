@@ -4,22 +4,72 @@
   "type": "object",
   "required": ["version", "profiles", "active_profile"],
   "properties": {
-    "version": {"type": "integer", "const": 1},
-    "active_profile": {"type": "integer", "minimum": 0},
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "active_profile": {
+      "type": "integer",
+      "minimum": 0
+    },
     "battery": {
       "type": "object",
       "properties": {
-        "divider_ratio": {"type": "number", "exclusiveMinimum": 1.0, "maximum": 12.0},
-        "low_battery_threshold_v": {"type": "number", "minimum": 2.5, "maximum": 4.35},
-        "full_voltage_v": {"type": "number", "minimum": 3.7, "maximum": 4.35},
-        "empty_voltage_v": {"type": "number", "minimum": 2.5, "maximum": 3.8},
-        "update_interval_ms": {"type": "integer", "minimum": 5000, "maximum": 600000},
-        "sample_count": {"type": "integer", "minimum": 5, "maximum": 9},
-        "smoothing_window": {"type": "integer", "minimum": 1, "maximum": 10},
-        "calibration_scale": {"type": "number", "minimum": 0.8, "maximum": 1.2},
-        "calibration_offset_v": {"type": "number", "minimum": -0.5, "maximum": 0.5},
-        "normal_idle_sleep_ms": {"type": "integer", "minimum": 10000, "maximum": 3600000},
-        "low_battery_idle_sleep_ms": {"type": "integer", "minimum": 5000, "maximum": 3600000}
+        "divider_ratio": {
+          "type": "number",
+          "exclusiveMinimum": 1.0,
+          "maximum": 12.0
+        },
+        "low_battery_threshold_v": {
+          "type": "number",
+          "minimum": 2.5,
+          "maximum": 4.35
+        },
+        "full_voltage_v": {
+          "type": "number",
+          "minimum": 3.7,
+          "maximum": 4.35
+        },
+        "empty_voltage_v": {
+          "type": "number",
+          "minimum": 2.5,
+          "maximum": 3.8
+        },
+        "update_interval_ms": {
+          "type": "integer",
+          "minimum": 5000,
+          "maximum": 600000
+        },
+        "sample_count": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 9
+        },
+        "smoothing_window": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "calibration_scale": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 1.2
+        },
+        "calibration_offset_v": {
+          "type": "number",
+          "minimum": -0.5,
+          "maximum": 0.5
+        },
+        "normal_idle_sleep_ms": {
+          "type": "integer",
+          "minimum": 10000,
+          "maximum": 3600000
+        },
+        "low_battery_idle_sleep_ms": {
+          "type": "integer",
+          "minimum": 5000,
+          "maximum": 3600000
+        }
       },
       "additionalProperties": false
     },
@@ -30,24 +80,64 @@
         "type": "object",
         "required": ["name", "id", "buttons", "encoder"],
         "properties": {
-          "name": {"type": "string"},
-          "id": {"type": "integer"},
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "id": {
+            "type": "integer",
+            "minimum": 0
+          },
           "buttons": {
             "type": "array",
-            "minItems": 9,
-            "maxItems": 9
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "object",
+              "required": ["id", "type"],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["none", "combo", "text", "media", "mouse", "sequence"]
+                },
+                "keys": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 6
+                },
+                "data": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
           },
           "encoder": {
             "type": "object",
             "required": ["cw", "ccw", "press"],
             "properties": {
-              "cw": {"type": "string"},
-              "ccw": {"type": "string"},
-              "press": {"type": "string"}
-            }
+              "cw": {
+                "type": "string"
+              },
+              "ccw": {
+                "type": "string"
+              },
+              "press": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           }
-        }
+        },
+        "additionalProperties": false
       }
     }
-  }
+  },
+  "additionalProperties": false
 }

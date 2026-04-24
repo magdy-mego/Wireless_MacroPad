@@ -1,29 +1,33 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <link rel="icon" type="image/png" href="/icon.png" />
-    <link rel="apple-touch-icon" href="/icon.png" />
+    <!-- Basic metadata and app assets. -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Macropad Config</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="apple-touch-icon" href="/icon.png" />
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
+    <!-- Decorative background layers. -->
     <div class="bg-orb bg-orb-a"></div>
     <div class="bg-orb bg-orb-b"></div>
 
     <main class="app">
+      <!-- Header status row (BLE, battery, AP). -->
       <header class="topbar">
         <div>
           <p class="kicker">ESP32 MacroPad</p>
           <h1>Wireless Config Console</h1>
         </div>
-<div class="status-cluster">
+
+        <div class="status-cluster">
           <span id="bleStatus" class="pill">BLE: --</span>
-          
+
           <div class="pill battery-container">
             <div class="battery-body">
-              <div id="batteryLevel" class="battery-level" style="width: 100%;"></div>
+              <div id="batteryLevel" class="battery-level" style="width: 100%"></div>
             </div>
             <div class="battery-cap"></div>
             <span id="batteryText" class="battery-text">--%</span>
@@ -33,12 +37,15 @@
         </div>
       </header>
 
+      <!-- Profile management card. -->
       <section class="profile-section card">
         <div class="section-title-row">
           <h2>Profiles</h2>
           <button id="addProfileBtn" class="btn">+ Add</button>
         </div>
+
         <div id="profileTabs" class="profile-tabs"></div>
+
         <div class="profile-editor">
           <label for="profileNameInput">Selected Profile Name</label>
           <input id="profileNameInput" type="text" maxlength="24" />
@@ -50,11 +57,13 @@
       </section>
 
       <section class="workspace">
+        <!-- 2x3 macro key matrix editor. -->
         <div class="card pad-grid-card">
           <h2>2x3 Macro Grid</h2>
           <div id="buttonGrid" class="button-grid"></div>
         </div>
 
+        <!-- Action editor for selected key. -->
         <div class="card editor-card">
           <h2>Button Editor</h2>
           <p id="selectedButtonLabel" class="muted">Select a button in the grid.</p>
@@ -67,16 +76,21 @@
             <option value="text">Text Macro</option>
             <option value="media">Media Key</option>
             <option value="mouse">Mouse</option>
-            <option value="layer_switch">Layer Switch</option>
           </select>
 
           <div id="sequenceGroup" class="input-group hidden">
             <label for="sequenceData">Sequence Script (Max 200 chars)</label>
-            <textarea id="sequenceData" rows="4" maxlength="200" placeholder="WIN+R; DELAY 300; TEXT chrome; ENTER"></textarea>
-            <p class="muted" style="font-size: 0.75rem; margin-top: 5px;">
-              Commands: DELAY [ms], TEXT [string], WIN+R, ENTER, etc. Separated by ";"
+            <textarea
+              id="sequenceData"
+              rows="4"
+              maxlength="200"
+              placeholder="WIN+R; DELAY 300; TEXT chrome; ENTER"
+            ></textarea>
+            <p class="muted" style="font-size: 0.75rem; margin-top: 5px">
+              Commands: DELAY [ms], TEXT [string], WIN+R, ENTER, ESC, TAB. Separate commands with ";"
             </p>
           </div>
+
           <div id="comboGroup" class="input-group hidden">
             <label for="comboKeys">Combo Keys (comma separated)</label>
             <input id="comboKeys" type="text" placeholder="KEY_LEFT_CTRL,KEY_S" />
@@ -109,15 +123,11 @@
             </select>
           </div>
 
-          <div id="layerGroup" class="input-group hidden">
-            <label for="layerData">Target Profile ID</label>
-            <input id="layerData" type="number" min="0" step="1" />
-          </div>
-
           <button id="applyButtonBtn" class="btn primary">Apply to Selected Button</button>
         </div>
       </section>
 
+      <!-- Encoder mappings are profile-specific. -->
       <section class="card encoder-card">
         <h2>Encoder Mapping</h2>
         <div class="encoder-grid">
@@ -136,6 +146,7 @@
         </div>
       </section>
 
+      <!-- Device-level actions. -->
       <section class="actions card">
         <button id="saveBtn" class="btn primary big">Save to Device</button>
         <button id="reloadBtn" class="btn">Reload from Device</button>
@@ -143,6 +154,7 @@
       </section>
     </main>
 
+    <!-- Transient toast notifications. -->
     <div id="toast" class="toast"></div>
 
     <script src="/app.js"></script>
