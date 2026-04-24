@@ -14,7 +14,10 @@ const char* actionTypeToString(ActionType type) {
       return "mouse";
     case ActionType::LayerSwitch:
       return "layer_switch";
+    case ActionType::Sequence:
+      return "sequence";
     case ActionType::None:
+    
     default:
       return "none";
   }
@@ -36,7 +39,11 @@ ActionType actionTypeFromString(const String& value) {
   if (value == "layer_switch") {
     return ActionType::LayerSwitch;
   }
+  if (value == "sequence") {
+    return ActionType::Sequence;
+  }
   return ActionType::None;
+
 }
 
 }  // namespace config

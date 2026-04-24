@@ -162,6 +162,7 @@ function renderAll() {
   renderGrid();
   renderButtonEditor();
   renderEncoderEditor();
+  document.getElementById('sequenceData').value = b.data || '';
 }
 
 function normalizeConfig(cfg) {
@@ -227,7 +228,9 @@ function readEditorIntoButton() {
   } else if (type === "layer_switch") {
     next.data = String(Math.max(0, Number(els.layerData.value) || 0));
   }
-
+  else if(b.type === 'sequence') {
+    b.data = document.getElementById('sequenceData').value;
+}
   profile.buttons[state.selectedButton] = next;
 }
 
@@ -483,4 +486,5 @@ function bindUi() {
   await loadConfig();
   await pollStatus();
   setInterval(pollStatus, 2000);
+  document.getElementById('sequenceGroup').classList.toggle('hidden', els.actionType.value !== 'sequence');
 })();

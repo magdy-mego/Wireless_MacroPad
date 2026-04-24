@@ -51,7 +51,7 @@
 
       <section class="workspace">
         <div class="card pad-grid-card">
-          <h2>3x3 Macro Grid</h2>
+          <h2>2x3 Macro Grid</h2>
           <div id="buttonGrid" class="button-grid"></div>
         </div>
 
@@ -62,6 +62,7 @@
           <label for="actionType">Action Type</label>
           <select id="actionType">
             <option value="none">None</option>
+            <option value="sequence">Sequence Macro</option>
             <option value="combo">Key Combo</option>
             <option value="text">Text Macro</option>
             <option value="media">Media Key</option>
@@ -69,6 +70,13 @@
             <option value="layer_switch">Layer Switch</option>
           </select>
 
+          <div id="sequenceGroup" class="input-group hidden">
+            <label for="sequenceData">Sequence Script (Max 200 chars)</label>
+            <textarea id="sequenceData" rows="4" maxlength="200" placeholder="WIN+R; DELAY 300; TEXT chrome; ENTER"></textarea>
+            <p class="muted" style="font-size: 0.75rem; margin-top: 5px;">
+              Commands: DELAY [ms], TEXT [string], WIN+R, ENTER, etc. Separated by ";"
+            </p>
+          </div>
           <div id="comboGroup" class="input-group hidden">
             <label for="comboKeys">Combo Keys (comma separated)</label>
             <input id="comboKeys" type="text" placeholder="KEY_LEFT_CTRL,KEY_S" />

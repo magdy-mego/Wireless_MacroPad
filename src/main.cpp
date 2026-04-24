@@ -37,6 +37,9 @@ bool gLedState = false;
 bool gEncoderPressPending = false;
 bool gEncoderLongPressHandled = false;
 
+static int gEncoderLedBrightness = 0; 
+constexpr uint8_t kLedPwmChannel = 0;
+
 constexpr uint32_t kStackDiagPeriodMs = 15000;
 constexpr UBaseType_t kStackWarnWords = 256;
 constexpr UBaseType_t kLoopStackWarnWords = 512;
@@ -175,16 +178,18 @@ void cycleActiveProfile() {
 
 void updateStatusLed() {
   const uint32_t now = millis();
+  
   if (ble_handler::isConnected()) {
-    digitalWrite(static_cast<uint8_t>(pins::kStatusLed), HIGH);
+    // ledcWrite(kLedPwmChannel, 255); 
     gLedState = true;
     return;
   }
 
+ 
   if ((now - gLastLedToggleMs) >= 500) {
     gLedState = !gLedState;
     gLastLedToggleMs = now;
-    digitalWrite(static_cast<uint8_t>(pins::kStatusLed), gLedState ? HIGH : LOW);
+    ledcWrite(kLedPwmChannel, gLedState ? 128 : 0); 
   }
 }
 
@@ -209,6 +214,19 @@ void handleInputEvent(const matrix::InputEvent& event) {
       gEncoderLongPressHandled = false;
       break;
 
+   
+    case matrix::EventType::EncoderClockwise:
+      gEncoderLedBrightness += 25; 
+      if (gEncoderLedBrightness > 255) gEncoderLedBrightness = 255;
+      ledcWrite(kLedPwmChannel, gEncoderLedBrightness);
+      break;
+
+    case matrix::EventType::EncoderCounterClockwise:
+      gEncoderLedBrightness -= 25; 
+      if (gEncoderLedBrightness < 0) gEncoderLedBrightness = 0;
+      ledcWrite(kLedPwmChannel, gEncoderLedBrightness);
+      break;
+
     default:
       break;
   }
@@ -222,12 +240,9 @@ void bleTask(void* /*param*/) {
 
     matrix::InputEvent event;
     while (matrix::pollEvent(&event, 0)) {
-      // Skip input processing if AP is running (web config mode)
       if (!web_server::isApEnabled()) {
          handleInputEvent(event);
       } else {
-         // In AP mode, only allow encoder short press for profile cycling
-         // Do not send BLE events
          if (event.type == matrix::EventType::EncoderPressed) {
             gEncoderPressPending = true;
             gEncoderLongPressHandled = false;
@@ -239,7 +254,6 @@ void bleTask(void* /*param*/) {
       }
     }
 
-    // Skip Bluetooth state update if AP is active (in web config mode)
     if (!web_server::isApEnabled()) {
         ble_handler::updateConnectionState();
         updateStatusLed();
@@ -269,7 +283,6 @@ void batteryTask(void* /*param*/) {
 
     if (battery_manager::updateIfDue()) {
       const battery_manager::BatteryState state = battery_manager::getState();
-      // 🛑 لا ترسل حالة البطارية عبر البلوتوث إذا كان الـ AP يعمل
       if (state.valid && !web_server::isApEnabled()) {
         ble_handler::setBatteryPercent(state.percent);
       }
@@ -296,8 +309,10 @@ void setup() {
   Serial.println("[BOOT] Boot-hold factory reset is disabled by policy.");
 #endif
 
-  pinMode(static_cast<uint8_t>(pins::kStatusLed), OUTPUT);
-  digitalWrite(static_cast<uint8_t>(pins::kStatusLed), LOW);
+  // digitalWrite
+  ledcSetup(kLedPwmChannel, 5000, 8); 
+  ledcAttachPin(static_cast<uint8_t>(pins::kStatusLed), kLedPwmChannel);
+  ledcWrite(kLedPwmChannel, 0); 
 
   const bool factoryResetRequested = shouldFactoryResetOnBoot();
   if (factoryResetRequested) {

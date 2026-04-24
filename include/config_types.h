@@ -6,12 +6,13 @@
 namespace config {
 
 constexpr uint8_t kConfigVersion = 1;
-constexpr size_t kButtonsPerProfile = 9;
+constexpr size_t kButtonsPerProfile = 6;
 constexpr size_t kMaxProfiles = 8;
 constexpr size_t kMaxKeysPerCombo = 6;
 
 enum class ActionType : uint8_t {
   Combo,
+  Sequence,
   Text,
   Media,
   Mouse,
@@ -50,8 +51,8 @@ struct BatteryConfig {
   uint8_t smoothingWindow = 5;
   float calibrationScale = 1.0f;
   float calibrationOffsetV = 0.0f;
-  uint32_t normalIdleSleepMs = 300000;
-  uint32_t lowBatteryIdleSleepMs = 15000;
+  uint32_t normalIdleSleepMs = 600000;
+  uint32_t lowBatteryIdleSleepMs = 60000;
 };
 
 struct Config {

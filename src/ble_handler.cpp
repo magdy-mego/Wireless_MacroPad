@@ -162,6 +162,60 @@ bool executeActionToken(const String& token, String* err) {
   return false;
 }
 
+// ==========================================
+// (Sequence Parser Engine)
+// ==========================================
+void executeSequence(const String& script) {
+    if (!gBleKeyboard.isConnected()) return;
+
+    int startIndex = 0;
+    int endIndex = script.indexOf(';');
+
+    while (startIndex < script.length()) {
+        String cmd = "";
+        if (endIndex == -1) {
+            cmd = script.substring(startIndex);
+            startIndex = script.length();
+        } else {
+            cmd = script.substring(startIndex, endIndex);
+            startIndex = endIndex + 1;
+            endIndex = script.indexOf(';', startIndex);
+        }
+
+        cmd.trim(); 
+        if (cmd.length() == 0) continue;
+
+        if (cmd.startsWith("DELAY ")) {
+            int delayTime = cmd.substring(6).toInt(); 
+            if (delayTime > 0) delay(delayTime);
+        } 
+        else if (cmd.startsWith("TEXT ")) {
+            String textToPrint = cmd.substring(5);
+            gBleKeyboard.print(textToPrint);
+            delay(50);
+        } 
+        else if (cmd == "ENTER") {
+            gBleKeyboard.write(KEY_RETURN);
+            delay(50);
+        } 
+        else if (cmd == "WIN+R") {
+            gBleKeyboard.press(KEY_LEFT_GUI);
+            gBleKeyboard.press('r');
+            delay(50);
+            gBleKeyboard.releaseAll();
+            delay(100); 
+        }
+        else if (cmd == "ESC") {
+            gBleKeyboard.write(KEY_ESC);
+            delay(50);
+        }
+        else if (cmd == "TAB") {
+            gBleKeyboard.write(KEY_TAB);
+            delay(50);
+        }
+    }
+}
+
 bool executeButtonAction(const config::ButtonAction& action, String* err) {
   switch (action.type) {
     case config::ActionType::Combo: {
@@ -197,6 +251,17 @@ bool executeButtonAction(const config::ButtonAction& action, String* err) {
         return false;
       }
       gBleKeyboard.print(action.data);
+      return true;
+
+    case config::ActionType::Sequence:
+      if (!gBleKeyboard.isConnected()) {
+        if (err != nullptr) {
+          *err = "BLE not connected";
+        }
+        return false;
+      }
+      Serial.printf("[SEQ] Executing: %s\n", action.data.c_str());
+      executeSequence(action.data);
       return true;
 
     case config::ActionType::Media:

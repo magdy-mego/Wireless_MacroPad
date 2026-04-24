@@ -33,7 +33,7 @@
     "smoothing_window": 5,
     "calibration_scale": 1.0,
     "calibration_offset_v": 0.0,
-    "normal_idle_sleep_ms": 60000,
-    "low_battery_idle_sleep_ms": 15000
+    "normal_idle_sleep_ms": 600000,
+    "low_battery_idle_sleep_ms": 60000
   }
 }
